@@ -229,7 +229,7 @@ class  ReducerFunction<S, A> implements Reducer<S,A>{
     }
 
     reduce(state: S, a:A): S {
-        return this.reduce(state, a);
+        return this.reducer(state, a);
     }
 }
 
