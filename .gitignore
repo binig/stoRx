@@ -5,3 +5,12 @@ dist
 bower_components
 npm-debug.log
 .idea
+.nyc_output
+lib
+esdoc
+coverage
+test/e2e/screenshots
+test/e2e/reports
+selenium-debug.log
+npm-debug.log
+.tern-port
