@@ -1,0 +1,19 @@
+{
+  "name": "Maginot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^8.0.14",
+    "ava": "^0.21.0",
+    "chromedriver": "^2.30.1",
+    "ts-helper": "^0.0.1",
+    "ts-loader": "^2.3.0",
+    "ts-node": "^3.2.1",
+    "typescript": "^2.4.1",
+    "webpack": "^3.3.0"
+  },
+  "dependencies": {
+    "rxjs": "^5.4.2"
+  }
+}
