@@ -10,16 +10,20 @@
     "doc": "mkdirp esdoc && esdoc -c esdoc.json",
     "lint": "eslint src test examples",
     "report": "npm run test && nyc report --reporter=lcov",
-    "test:unit": "tsc --outDir dist/test && nyc ava",
-    "test": "npm run test:unit",
+    "test": "NODE_ENV=test mocha -r ts-node/register test/**/*.ts --bail",
+    "cover": "NODE_ENV=test nyc npm t",
     "prepublish": "npm run clean && npm run report && npm run build && npm run doc"
   },
   "devDependencies": {
+    "@types/chai": "^4.0.1",
+    "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.14",
-    "ava": "^0.21.0",
+    "chai": "^4.1.0",
     "chromedriver": "^2.30.1",
     "esdoc": "^0.5.2",
+    "istanbul-reports": "^1.1.1",
     "mkdirp": "^0.5.1",
+    "mocha": "^3.4.2",
     "nyc": "^11.0.3",
     "ts-helper": "^0.0.1",
     "ts-loader": "^2.3.0",
@@ -30,20 +34,24 @@
   "dependencies": {
     "rxjs": "^5.4.2"
   },
-  "ava": {
-    "files": [
-      "dist/test/test/unit/**/*.spec.js"
+  "nyc": {
+    "include": [
+      "src/*.ts",
+      "src/**/*.ts"
     ],
-    "source": [
-      "dist/test/src/**/*.js"
+    "exclude": [
+      "typings"
     ],
-    "concurrency": 5,
-    "failFast": true,
-    "tap": false,
-    "powerAssert": false,
-    "babel": "inherit",
+    "extension": [
+      ".ts"
+    ],
     "require": [
-      "babel-register"
-    ]
+      "ts-node/register"
+    ],
+    "reporter": [
+      "json",
+      "html"
+    ],
+    "all": true
   }
 }
