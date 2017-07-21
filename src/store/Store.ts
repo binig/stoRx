@@ -245,6 +245,7 @@ export interface Action {
 /*********************************************    *******************************************************/
 /***********************                      Test                                   ********************/
 /*********************************************    *******************************************************/
+/*
 interface  Action2 extends Action {
 
 }
@@ -285,3 +286,4 @@ store.mapPath('name').actionByType(NameEvent).filter((e:any)=> e.name!==null).su
 let el:Element = new Element();
 store.mapPath('count').subscribe(Observable.fromEvent(el, 'onClick'), (s:number,e)=>s+1);
 store.mapPath('name').dispatch({type:'changeNAme', newName:'new name'});
+    */
