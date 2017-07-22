@@ -58,3 +58,11 @@ store.dispatch({ name : 'newname'});
 * we can even reuse reducer on multiple substore.
 * we can take advantage of the Observable transformation function to bind Recuder with the Store.subscribeReducer(observable, reducer)
 
+
+## License
+
+The MIT License (MIT) - See file 'LICENSE' in this project
+
+## Copyright
+
+Copyright © 2017 Benoît Roger. All Rights Reserved.
