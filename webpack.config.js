@@ -1,5 +1,5 @@
 module.exports = {
- entry: './src/index.ts',
+ entry: './src/store/Store.ts',
  module: {
    rules: [
      {
