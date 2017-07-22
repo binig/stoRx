@@ -51,10 +51,17 @@ countStore.observable().subscribe(s=>console.log('countStore', s));
 store.dispatch({ name : null});
 store.dispatch({ name : 'newname'});
 ```
+## Binding directly to event
+we can use the dispatch like redux, but we can also directly bind to any javascript event
+```js
+let el = document.getElementById('MyButton');
+countStore.subscribe(Observable.fromEvent(el,'click'), (s,e)=>s+1);
+```
+we can have reducer on any Observable.
 
 ## To Sum it up !
 * with the sub store we can modularized and even simplify our reducer ( they can directly return the name ).
-* we avoid big switches on action type with filters to decide what to do with the event.
+* we avoid big _switch_ on action type with filters to decide what to do with the event.
 * we can even reuse reducer on multiple substore.
 * we can take advantage of the Observable transformation function to bind Recuder with the Store.subscribeReducer(observable, reducer)
 
