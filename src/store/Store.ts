@@ -46,7 +46,7 @@ class StoreUtils {
             for (let i:number=0;i<pathSplit.length-1;i++) {
                 current = current[pathSplit[i]];
             }
-            p[pathSplit[pathSplit.length-1]] = s;
+            current[pathSplit[pathSplit.length-1]] = s;
             return p;
         };
     }
