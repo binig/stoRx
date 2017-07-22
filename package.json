@@ -33,6 +33,7 @@
     "webpack": "^3.3.0"
   },
   "dependencies": {
+    "growl": "^1.10.2",
     "rxjs": "^5.4.2"
   },
   "nyc": {
