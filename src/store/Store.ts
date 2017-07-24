@@ -6,19 +6,19 @@ import {Observable, ReplaySubject, Subject} from "rxjs";
 export interface Store<S> {
 
     /**
-     * create a view on the store pointing of a substate extracted by the @param map function
+     * create a view on the store pointing of a substate extracted by the @param mapFunction function
      * @param {(s: S) => T} map function to extract the substate the view will be based on
-     * @param {(state: T, parentState: S) => S} mapReverse map function to reinject the substate in the parent state, this is used when the substate is updated
+     * @param {(state: T, parentState: S) => S} mapReverse mapFunction function to reinject the substate in the parent state, this is used when the substate is updated
      * @returns {Store<T>} a view store on the substate
      */
-    map<T>(map:(s:S)=>T, mapReverse:(state:T,parentState:S)=>S):Store<T>;
+    mapFunction<T>(map:(s:S)=>T, mapReverse:(state:T, parentState:S)=>S):Store<T>;
 
     /**
      * create a view on the substate designed by the path
      * @param {string} path to the substate
      * @returns {Store<T>} a view store on 'path' substate
      */
-    mapPath<T>(path:string):Store<T>
+    map<T>(path:string):Store<T>
 
     /**
      * @returns {Observable<S>} an observable with the store state will be trigger when the state is updated
@@ -160,11 +160,11 @@ class StoreImpl<S> implements Store<S> {
         this.subscribeReducer(actions, new ReducerFunction(reducer));
     }
 
-    map<T>(map: (s: S) => T, mapReverse: (state: T, parentState: S) => S): Store<T> {
+    mapFunction<T>(map: (s: S) => T, mapReverse: (state: T, parentState: S) => S): Store<T> {
         return new ViewStore( map, mapReverse, this);
     }
 
-    mapPath<T>(path: string): Store<T> {
+    map<T>(path: string): Store<T> {
         return new ViewStore<T,S>(StoreUtils.createMapFunction(path) , StoreUtils.createMapReverseFunction(path), this);
     }
 
@@ -240,13 +240,13 @@ class FilterActionManager<S,A> implements ActionManager<S,A> {
 class ViewStore<S,P> implements Store<S>{
     private actionSubject:Subject<any>;
 
-    constructor(private mapFunction:(s:P)=>S, private mapReverseFunction:(state:S, parentState:P)=>P, private store:Store<P>) {
+    constructor(private mapFunc:(s:P)=>S, private mapReverseFunction:(state:S, parentState:P)=>P, private store:Store<P>) {
         this.actionSubject = new Subject();
     }
 
 
     public  observable(): Observable<S> {
-        return this.store.observable().map(this.mapFunction);
+        return this.store.observable().map(this.mapFunc).distinct();
     }
 
 
@@ -264,19 +264,19 @@ class ViewStore<S,P> implements Store<S>{
     }
 
     subscribe<A>(actions: Observable<A>, reducer: (s: S, a: A) => S): void {
-        this.store.subscribeReducer(actions, new ViewReducer(this.mapFunction, this.mapReverseFunction, new ReducerFunction(reducer)));
+        this.store.subscribeReducer(actions, new ViewReducer(this.mapFunc, this.mapReverseFunction, new ReducerFunction(reducer)));
     }
 
     subscribeReducer<A>(actions: Observable<A>, reducer: Reducer<S, A>): void {
-        this.store.subscribeReducer(actions, new ViewReducer(this.mapFunction, this.mapReverseFunction, reducer));
+        this.store.subscribeReducer(actions, new ViewReducer(this.mapFunc, this.mapReverseFunction, reducer));
     }
 
 
-    public map<T>(map:(s:S)=>T, mapReverse:(state:T,parentState:S)=>S):Store<T> {
+    public mapFunction<T>(map:(s:S)=>T, mapReverse:(state:T, parentState:S)=>S):Store<T> {
         return new ViewStore(map, mapReverse, this);
     }
 
-    public mapPath<T>(path:string):Store<T> {
+    public map<T>(path:string):Store<T> {
         return new ViewStore(StoreUtils.createMapFunction(path) , StoreUtils.createMapReverseFunction(path), this);
     }
 

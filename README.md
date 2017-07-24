@@ -26,8 +26,8 @@ map and filter
 1) Create a store and a substore pointing to the name  and one to the counter
 ```js
 let store = StoreManager.createStore({ name : 'gringotts', counter : 0 });
-let nameStore = store.mapPath('name');
-let countStore = store.mapPath('counter');
+let nameStore = store.map('name');
+let countStore = store.map('counter');
 
 // here the subscribe is done on a store that has for state directly the name
 // so we just for reducer return the new name
@@ -65,10 +65,9 @@ we can have reducer on any Observable.
 * we can even reuse reducer on multiple substore.
 * we can take advantage of the Observable transformation function to bind Recuder with the Store.subscribeReducer(observable, reducer)
 
-## TODO
+## TODOS 
 * Add time machine feature
-* Observable of substore should be trigger only when substate is updated
-* Should store.map('path') return the same instance of the same path ? add cache of substore ?
+* Should store.map('path') return the same instance of the same path (if not they should behave like they are) ? add cache of substore ?
 
 ## License
 

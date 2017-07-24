@@ -66,7 +66,7 @@ describe("Store test",()=>{
     it('store change any action value subStore', () => {
         let initState = { name : "1", count:0};
         let store = StoreManager.createStore(initState);
-        let substore = store.mapPath('name');
+        let substore = store.map('name');
         substore.action().subscribe((s:any,a:any)=> { return a.name} );
         let state:any = null;
         let substate:any = null;
@@ -83,7 +83,7 @@ describe("Store test",()=>{
     it('subStore reducer does nothing', () => {
         let initState = { name : "1", count:0};
         let store = StoreManager.createStore(initState);
-        let substore = store.mapPath('name');
+        let substore = store.map('name');
         substore.action().subscribe((s:any,a:any)=> { return s} );
         let state:any = null;
         let substate:any = null;
@@ -98,10 +98,10 @@ describe("Store test",()=>{
 
     });
 
-    it('store change any action value subStore by map function', () => {
+    it('store change any action value subStore by mapFunction function', () => {
         let initState:State = { name : "1", count:0};
         let store:Store<State> = StoreManager.createStore(initState);
-        let substore:Store<string> = store.map((s:State)=>s.name, (s:string,p:State)=>{p.name=s; return p});
+        let substore:Store<string> = store.mapFunction((s:State)=>s.name, (s:string, p:State)=>{p.name=s; return p});
         substore.action().subscribe((s:any,a:any)=> { return a.name} );
         let state:any = null;
         let substate:any = null;
@@ -119,7 +119,7 @@ describe("Store test",()=>{
     it('store change any action value subStore deep', () => {
         let initState = {parent:{ name : "1"}};
         let store = StoreManager.createStore(initState);
-        let substore = store.mapPath('parent.name');
+        let substore = store.map('parent.name');
         substore.action().subscribe((s:any,a:any)=> { return a.name} );
         let state:any = null;
         let substate:any = null;
@@ -137,7 +137,7 @@ describe("Store test",()=>{
     it('store change any action value subStore of substore', () => {
         let initState = {parent:{ name : "1"}};
         let store = StoreManager.createStore(initState);
-        let substore = store.mapPath('parent').mapPath('name');
+        let substore = store.map('parent').map('name');
         substore.action().subscribe((s:any,a:any)=> { return a.name} );
         let state:any = null;
         let substate:any = null;
@@ -152,11 +152,11 @@ describe("Store test",()=>{
 
     });
 
-    it('store change any action value subStore of substore by map function', () => {
+    it('store change any action value subStore of substore by mapFunction function', () => {
         let initState = {parent:{ name : "1"}};
         let store = StoreManager.createStore(initState);
-        let substore = store.map((s:any)=>s.parent, (s:any, p:any)=> {p.parent=s; return p;})
-            .map((s:any)=>s.name, (s:any, p:any)=> {p.name=s; return p;});
+        let substore = store.mapFunction((s:any)=>s.parent, (s:any, p:any)=> {p.parent=s; return p;})
+            .mapFunction((s:any)=>s.name, (s:any, p:any)=> {p.name=s; return p;});
         substore.action().subscribe((s:any,a:any)=> { return a.name} );
         let state:any = null;
         let substate:any = null;
@@ -174,7 +174,7 @@ describe("Store test",()=>{
     it('store change any action value subStore using reducer', () => {
         let initState:State = { name : "1", count:0};
         let store = StoreManager.createStore(initState);
-        let substore:Store<string> = store.mapPath('name');
+        let substore:Store<string> = store.map('name');
         substore.actionByType(EventName).subscribeReducer(new NameReducer());
         let state:State = null;
         let substate:string = null;
@@ -192,7 +192,7 @@ describe("Store test",()=>{
     it('store change filtered action value subStore using function', () => {
         let initState:State = { name : "1", count:0};
         let store = StoreManager.createStore(initState);
-        let substore:Store<string> = store.mapPath('name');
+        let substore:Store<string> = store.map('name');
         substore.actionByType(EventName)
             .filter(e=>e.name!=='ignore')
             .filter(e=>e.name!==null)
@@ -219,7 +219,7 @@ describe("Store test",()=>{
     it('store change filtered action value subStore using reducer', () => {
         let initState:State = { name : "1", count:0};
         let store = StoreManager.createStore(initState);
-        let substore:Store<string> = store.mapPath('name');
+        let substore:Store<string> = store.map('name');
         substore.actionByType(EventName)
             .filter(e=>e.name!=='ignore')
             .filter(e=>e.name!==null)
@@ -240,6 +240,34 @@ describe("Store test",()=>{
         expect(substate).to.be.eq('test',"name in substate should be change by dispatch action");
         expect(state).to.be.not.eq(initState, "the state should be a new one s");
         expect(state.name).to.be.eq( "test", "name should be change by dispatch action");
+
+    });
+
+    it('change in a substore should not trigger distinct substore', () => {
+        let initState = { name : 0, count:0};
+        let store = StoreManager.createStore(initState);
+        let countStore = store.map("count");
+        let nameStore = store.map("name");
+        let countStoreUpdate = 0;
+        let storeUpdate = 0;
+        let nameUpdate = 0;
+        store.observable().subscribe(s=>storeUpdate +=1);
+        countStore.observable().subscribe(s=>countStoreUpdate+=1);
+        nameStore.observable().subscribe(s=>nameUpdate+=1);
+        countStore.action().subscribe((s:number,a:any)=>s+1);
+        nameStore.action().subscribe((s:number,a:any)=>s+1);
+        nameStore.dispatch({});
+        expect(countStoreUpdate).to.be.eq(1);
+        expect(storeUpdate).to.be.eq(2);
+        expect(nameUpdate).to.be.eq(2);
+        countStore.dispatch({});
+        expect(countStoreUpdate).to.be.eq(2);
+        expect(storeUpdate).to.be.eq(3);
+        expect(nameUpdate).to.be.eq(2);
+        countStore.dispatch({});
+        expect(countStoreUpdate).to.be.eq(3);
+        expect(storeUpdate).to.be.eq(4);
+        expect(nameUpdate).to.be.eq(2);
 
     });
 
