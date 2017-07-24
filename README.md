@@ -65,6 +65,10 @@ we can have reducer on any Observable.
 * we can even reuse reducer on multiple substore.
 * we can take advantage of the Observable transformation function to bind Recuder with the Store.subscribeReducer(observable, reducer)
 
+## TODO
+* Add time machine feature
+* Observable of substore should be trigger only when substate is updated
+* Should store.map('path') return the same instance of the same path ? add cache of substore ?
 
 ## License
 

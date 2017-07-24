@@ -1,26 +1,105 @@
 import {Observable, ReplaySubject, Subject} from "rxjs";
 
+/**
+ *
+ */
 export interface Store<S> {
+
+    /**
+     * create a view on the store pointing of a substate extracted by the @param map function
+     * @param {(s: S) => T} map function to extract the substate the view will be based on
+     * @param {(state: T, parentState: S) => S} mapReverse map function to reinject the substate in the parent state, this is used when the substate is updated
+     * @returns {Store<T>} a view store on the substate
+     */
     map<T>(map:(s:S)=>T, mapReverse:(state:T,parentState:S)=>S):Store<T>;
+
+    /**
+     * create a view on the substate designed by the path
+     * @param {string} path to the substate
+     * @returns {Store<T>} a view store on 'path' substate
+     */
     mapPath<T>(path:string):Store<T>
+
+    /**
+     * @returns {Observable<S>} an observable with the store state will be trigger when the state is updated
+     */
     observable():Observable<S>;
+
+    /**
+     * trigger an action on the store that may then trigger reducer, the action will propagate to parent store
+     * @param {A} action the action to trigger
+     */
     dispatch<A>(action:A);
 
+    /**
+     * @returns {ActionManager<S, A>} an action manager to be used to bind reducer to dispatched action
+     */
     action<A>():ActionManager<S,A>;
+
+    /**
+     *
+     * @param {{new() => A}} type type of action manage
+     * @returns {ActionManager<S, A>} an action manager working on 'type' action
+     */
     actionByType<A>(type: new () => A):ActionManager<S,A>;
+
+    /**
+     * directly subscribe a reducer on an observable
+     * @param {Observable<A>} actions the observable the reducer will subscribe
+     * @param {(s: S, a: A) => S} reducer function
+     */
     subscribe<A>(actions:Observable<A>, reducer:(s:S, a:A)=>S):void;
+    /**
+     * directly subscribe a reducer on an observable
+     * @param {Observable<A>} actions the observable the reducer will subscribe
+     * @param {(s: S, a: A) => S} reducer object
+     */
     subscribeReducer<A>(actions:Observable<A>, reducer:Reducer<S,A>):void;
 }
 
+/**
+ * an action manager is a class to bind to reducer to store internal action dispatcher
+ * it can also be use to monitor emitted action via the observable()
+ */
 export interface ActionManager<S,A> {
+    /**
+     * subscribe a reducer object to the action this manager handle
+     * @param {Reducer<S, A>} reducer
+     */
     subscribeReducer(reducer:Reducer<S,A>):void;
+    /**
+     * subscribe a reducer function to the action this manager handle
+     * @param {Reducer<S, A>} reducer
+     */
     subscribe(reducer:(s:S, a:A)=>S):void;
+
+    /**
+     *
+     * @returns {Observable<A>} the observable of the actions managed
+     */
     observable():Observable<A>;
+
+    /**
+     * build a new actionManager that will handle the subset of action that pass the filter function
+     * @param {(a: A) => boolean} filter function to filter actions
+     * @returns {ActionManager<S, A>} the new action manage that handle the filtered actions
+     */
     filter(filter:(a:A)=>boolean):ActionManager<S,A>;
+
+    /**
+     *
+     * @returns {Store<S>} the store associated with this action manager
+     */
     getStore():Store<S>;
 }
 
+
 export class StoreManager {
+    /**
+     *
+     * @param {S} state initial state
+     * @returns {Store<S>} create a store with the initial state
+     */
     public static createStore<S>(state:S):Store<S> {
         return new StoreImpl<S>(state);
     }
