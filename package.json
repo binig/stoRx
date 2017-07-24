@@ -7,7 +7,7 @@
     "build": "npm run build:commonjs",
     "build:commonjs": "webpack",
     "clean": " ",
-    "doc": "mkdirp dist/doc && typedoc --out dist/doc src/ --mode file",
+    "doc": "mkdirp dist/doc && typedoc --out dist/doc  --mode modules --exclude '**/+(*.spec|index).ts' src/",
     "lint": "eslint src test examples",
     "report": "npm run cover && nyc report --reporter=lcov && codecov",
     "test": "NODE_ENV=test mocha -r ts-node/register test/**/*.ts --bail",

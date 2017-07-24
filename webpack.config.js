@@ -13,8 +13,6 @@ module.exports = {
    extensions: [".tsx", ".ts", ".js"]
  },
  output: {
-     path:'dist',
-   filename: 'bundle.js',
-   path: __dirname
- }
+   path:__dirname + '/dist/build',
+   filename: 'bundle.js' }
 };
