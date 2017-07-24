@@ -165,7 +165,7 @@ class StoreImpl<S> implements Store<S> {
     }
 
     map<T>(path: string): Store<T> {
-        return new ViewStore<T,S>(StoreUtils.createMapFunction(path) , StoreUtils.createMapReverseFunction(path), this);
+        return new ViewStore<T,S>(<(s: S) => T>StoreUtils.createMapFunction(path) , <(state: T, parentState: S) => S>StoreUtils.createMapReverseFunction(path), this);
     }
 
     public  observable(): Observable<S> {
