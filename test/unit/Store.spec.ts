@@ -1,6 +1,9 @@
 import { expect } from 'chai';
-import {Reducer, Store, StoreManager} from "../../src/store/Store";
+import {Gringotts} from "../../src/store/Store";
 import {isUndefined} from "util";
+import Reducer = Gringotts.Reducer;
+import StoreManager = Gringotts.StoreManager;
+import Store = Gringotts.Store;
 
 interface State {
     name:string;
