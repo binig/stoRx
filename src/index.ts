@@ -1,1 +1,1 @@
-export {Gringotts} from './store/Store'
+export {StoRx} from './store/Store'

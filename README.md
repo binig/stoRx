@@ -1,11 +1,11 @@
-[![Build Status](https://travis-ci.org/binig/gringotts.svg?branch=master)](https://travis-ci.org/binig/gringotts)
-[![codecov](https://codecov.io/gh/binig/gringotts/branch/master/graph/badge.svg)](https://codecov.io/gh/binig/gringotts)
-[![Dependency Status](https://gemnasium.com/badges/github.com/binig/gringotts.svg)](https://gemnasium.com/github.com/binig/gringotts)
+[![Build Status](https://travis-ci.org/binig/stoRx.svg?branch=master)](https://travis-ci.org/binig/stoRx)
+[![codecov](https://codecov.io/gh/binig/stoRx/branch/master/graph/badge.svg)](https://codecov.io/gh/binig/stoRx)
+[![Dependency Status](https://gemnasium.com/badges/github.com/binig/stoRx.svg)](https://gemnasium.com/github.com/binig/stoRx)
 
 ## Basic Usage
 1) Create a store and bind a reducer to event
 ```js
-let store = StoreManager.createStore({ name : 'gringotts', counter : 0 });
+let store = StoreManager.createStore({ name : 'stoRx', counter : 0 });
 store.action().subscribe((s,a)=> { let ns = Object.assign({},s);
             ns.name = a.name; ns.count++; return ns; } );
 
@@ -25,7 +25,7 @@ with the previous example it's just look like a lame redux / rxjs, so we gonna d
 map and filter
 1) Create a store and a substore pointing to the name  and one to the counter
 ```js
-let store = StoreManager.createStore({ name : 'gringotts', counter : 0 });
+let store = StoreManager.createStore({ name : 'stoRx', counter : 0 });
 let nameStore = store.map('name');
 let countStore = store.map('counter');
 
