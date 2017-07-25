@@ -1,1 +1,0 @@
-export {StoRx} from './store/Store'

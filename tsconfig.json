@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2015",
+    "target": "es6",
     "noImplicitAny": false,
     "sourceMap": true,
     "declaration": true,
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": ["node_modules/@types"],
+    "outDir" : "dist/build/"
   },
   "exclude": [
     "node_modules"

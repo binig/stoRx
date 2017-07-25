@@ -102,18 +102,9 @@ export namespace StoRx {
         getStore(): Store<S>;
     }
 
-
-    export class StoreManager {
-        /**
-         *
-         * @param {S} state initial state
-         * @returns {Store<S>} create a store with the initial state
-         */
-        public static createStore<S>(state: S): Store<S> {
-            return new StoreImpl<S>(state);
-        }
+    export function  createStore<S>(state: S): Store<S> {
+        return new StoreImpl<S>(state);
     }
-
 
     class StoreUtils {
         public static createMapFunction<S, T>(path: string): (s: S) => T {
