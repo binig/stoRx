@@ -1,6 +1,9 @@
 [![Build Status](https://travis-ci.org/binig/stoRx.svg?branch=master)](https://travis-ci.org/binig/stoRx)
 [![codecov](https://codecov.io/gh/binig/stoRx/branch/master/graph/badge.svg)](https://codecov.io/gh/binig/stoRx)
 [![Dependency Status](https://gemnasium.com/badges/github.com/binig/stoRx.svg)](https://gemnasium.com/github.com/binig/stoRx)
+[![npm](https://img.shields.io/npm/v/storx.svg)](https://www.npmjs.com/package/storx)
+[![npm](https://img.shields.io/npm/dm/storx.svg)](https://www.npmjs.com/package/storx)
+
 
 ## Basic Usage
 1) Create a store and bind a reducer to event
