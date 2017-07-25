@@ -6,13 +6,13 @@
 1) Create a store and bind a reducer to event
 ```js
 let store = StoreManager.createStore({ name : 'stoRx', counter : 0 });
-store.action().subscribe((s,a)=> { let ns = Object.assign({},s);
-            ns.name = a.name; ns.count++; return ns; } );
+store.action().subscribe((state, action)=> { let newState = ...state;
+            newState.name = action.name; newState.count++; return newState; } );
 
 ```
 2) To get the state update we subscribe to the state Observable
 ```js
-store.observable().subscribe(s=>console.log(s));
+store.observable().subscribe(state=>console.log(state));
 ```
 
 3) We trigger an event
@@ -32,19 +32,19 @@ let countStore = store.map('counter');
 // here the subscribe is done on a store that has for state directly the name
 // so we just for reducer return the new name
 // of course we filter out action that do not provide a new name
-nameStore.action().filter(a=>a.name!==null).subscribe((s,a)=> a.name);
+nameStore.action().filter(action=>action.name!==null).subscribe((state,action)=> action.name);
 
 // he we just want to count all the action
 // the state contains directly the count value
-countStore.action().subscribe((s,a)=> s+1);
+countStore.action().subscribe((state,action)=> state+1);
 
 ```
 2) To get the state update we subscribe to the state Observable
 ```js
-store.observable().subscribe(s=>console.log(s));
+store.observable().subscribe(state=>console.log(state));
 // be we can also subscribe to the substore
-nameStore.observable().subscribe(s=>console.log('nameStore', s));
-countStore.observable().subscribe(s=>console.log('countStore', s));
+nameStore.observable().subscribe(nameState=>console.log('nameStore', nameState));
+countStore.observable().subscribe(countState=>console.log('countStore', countState));
 ```
 3) We trigger an event
 ```js
@@ -55,7 +55,7 @@ store.dispatch({ name : 'newname'});
 we can use the dispatch like redux, but we can also directly bind to any javascript event
 ```js
 let el = document.getElementById('MyButton');
-countStore.subscribe(Observable.fromEvent(el,'click'), (s,e)=>s+1);
+countStore.subscribe(Observable.fromEvent(el,'click'), (state,actionEvent)=>state+1);
 ```
 we can have reducer on any Observable.
 

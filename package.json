@@ -1,8 +1,8 @@
 {
   "name": "storx",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "main": "dist/build/bundle.js",
-  "types": "dist/build/src/store/Store.d.ts",
+  "types": "dist/build/src/index.d.ts",
   "description": "Redux like store base on Observable",
   "license": "MIT",
   "scripts": {
