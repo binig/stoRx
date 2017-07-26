@@ -8,7 +8,7 @@
 ## Basic Usage
 1) Create a store and bind a reducer to event
 ```js
-let store = StoreManager.createStore({ name : 'stoRx', counter : 0 });
+let store = StoRx.createStore({ name : 'stoRx', counter : 0 });
 store.action().subscribe((state, action)=> { let newState = ...state;
             newState.name = action.name; newState.count++; return newState; } );
 
@@ -28,7 +28,7 @@ with the previous example it's just look like a lame redux / rxjs, so we gonna d
 map and filter
 1) Create a store and a substore pointing to the name  and one to the counter
 ```js
-let store = StoreManager.createStore({ name : 'stoRx', counter : 0 });
+let store = StoRx.createStore({ name : 'stoRx', counter : 0 });
 let nameStore = store.map('name');
 let countStore = store.map('counter');
 
