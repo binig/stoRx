@@ -70,7 +70,6 @@ we can have reducer on any Observable.
 
 ## TODOS 
 * Add time machine feature
-* Should store.map('path') return the same instance of the same path (if not they should behave like they are) ? add cache of substore ?
 
 ## License
 

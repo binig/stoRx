@@ -18,7 +18,7 @@ export namespace StoRx {
          * @param {(state: T, parentState: S) => S} mapReverse mapFunction function to reinject the substate in the parent state, this is used when the substate is updated
          * @returns {Store<T>} a view store on the substate
          */
-        mapFunction<T>(map: (s: S) => T, mapReverse: (state: T, parentState: S) => S): Store<T>;
+        mapFunction<T>(id:string, map: (s: S) => T, mapReverse: (state: T, parentState: S) => S): Store<T>;
 
         /**
          * create a view on the substate designed by the path
@@ -49,6 +49,7 @@ export namespace StoRx {
          * @returns {ActionManager<S, A>} an action manager working on 'type' action
          */
         actionByType<A>(type: new () => A): ActionManager<S, A>;
+
 
         /**
          * directly subscribe a reducer on an observable
@@ -106,6 +107,38 @@ export namespace StoRx {
         return new StoreImpl<S>(state);
     }
 
+
+    interface Event<A> {
+        source:string;
+        event:A;
+    }
+
+    interface StoreDispatcher<S> extends Store<S> {
+
+        /**
+         *
+         * @returns {Observable<A>} an observable of all the action emitted on the store
+         */
+        actions<A>(): Observable<Event<A>>;
+
+        dispatchWithSource<A>(action: A, source:string);
+
+        /**
+         * directly subscribe a reducer on an observable
+         * @param {Observable<A>} actions the observable the reducer will subscribe
+         * @param {(s: S, a: A) => S} reducer function
+         */
+        subscribeEvent<A>(actions: Observable<Event<A>>, reducer: (s: S, a: A) => S): void;
+
+        /**
+         * directly subscribe a reducer on an observable
+         * @param {Observable<A>} actions the observable the reducer will subscribe
+         * @param {(s: S, a: A) => S} reducer object
+         */
+        subscribeReducerEvent<A>(actions: Observable<Event<A>>, reducer: Reducer<S, A>): void;
+
+    }
+
     class StoreUtils {
         public static createMapFunction<S, T>(path: string): (s: S) => T {
             let pathSplit: string[] = path.split(".");
@@ -131,10 +164,10 @@ export namespace StoRx {
         }
     }
 
-    class StoreImpl<S> implements Store<S> {
+    class StoreImpl<S> implements StoreDispatcher<S> {
         private stateSubject: Subject<S>;
         private currentState: S;
-        private actionSubject: Subject<any>;
+        private actionSubject: Subject<Event<any>>;
 
         constructor(private state: S) {
             this.stateSubject = new ReplaySubject(1);
@@ -162,12 +195,21 @@ export namespace StoRx {
             this.subscribeReducer(actions, new ReducerFunction(reducer));
         }
 
-        mapFunction<T>(map: (s: S) => T, mapReverse: (state: T, parentState: S) => S): Store<T> {
-            return new ViewStore(map, mapReverse, this);
+
+        subscribeEvent<A>(actions: Observable<Event<A>>, reducer: (s: S, a: A) => S): void {
+            this.subscribe(actions.map(e=>e.event), reducer);
+        }
+
+        subscribeReducerEvent<A>(actions: Observable<Event<A>>, reducer: Reducer<S, A>): void {
+            this.subscribeReducer(actions.map(e=>e.event), reducer);
+        }
+
+        mapFunction<T>(id:string, map: (s: S) => T, mapReverse: (state: T, parentState: S) => S): Store<T> {
+            return new ViewStore(id, map, mapReverse, this);
         }
 
         map<T>(path: string): Store<T> {
-            return new ViewStore<T, S>(<(s: S) => T>StoreUtils.createMapFunction(path), <(state: T, parentState: S) => S>StoreUtils.createMapReverseFunction(path), this);
+            return new ViewStore<T, S>(path, <(s: S) => T>StoreUtils.createMapFunction(path), <(state: T, parentState: S) => S>StoreUtils.createMapReverseFunction(path), this);
         }
 
         public observable(): Observable<S> {
@@ -175,7 +217,11 @@ export namespace StoRx {
         }
 
         dispatch<A>(action: A) {
-            this.actionSubject.next(action);
+            this.dispatchWithSource(action, '');
+        }
+
+        dispatchWithSource<A>(action: A, source:string) {
+            this.actionSubject.next({source:source, event:action});
         }
 
         action<A>(): ActionManager<S, A> {
@@ -183,25 +229,42 @@ export namespace StoRx {
         }
 
         actionByType<A>(type: new () => A): ActionManager<S, A> {
-            return new ActionManagerImpl(this, this.actionSubject.asObservable().filter(v => v instanceof type));
+            return new ActionManagerImpl(this, this.actionSubject.asObservable().filter(v => v.event instanceof type));
+        }
+
+        actions<A>(): Observable<Event<A>> {
+            return this.actionSubject;
         }
     }
 
-    class ActionManagerImpl<S, A>  implements ActionManager<S, A> {
 
-        constructor(private store: Store<S>, private obs: Observable<A>) {
+    interface ActionManagerDispatcher<S, A> extends ActionManager<S, A> {
+
+        observableEvent():Observable<Event<A>>;
+
+        getStoreDispatcher():StoreDispatcher<S>;
+    }
+
+    class ActionManagerImpl<S, A>  implements ActionManagerDispatcher<S, A> {
+
+        constructor(private store: StoreDispatcher<S>, private obs: Observable<Event<A>>) {
         }
 
 
         subscribeReducer(reducer: Reducer<S, A>): void {
-            this.getStore().subscribeReducer(this.observable(), reducer);
+            this.getStoreDispatcher().subscribeReducerEvent(this.observableEvent(), reducer);
         }
 
         subscribe(reducer: (s: S, a: A) => S): void {
-            this.getStore().subscribe(this.observable(), reducer);
+            this.getStoreDispatcher().subscribeEvent(this.observableEvent(), reducer);
         }
 
         observable(): Observable<A> {
+            return this.obs.map(e=>e.event);
+        }
+
+
+        observableEvent(): Observable<Event<A>> {
             return this.obs;
         }
 
@@ -212,22 +275,31 @@ export namespace StoRx {
         getStore(): Store<S> {
             return this.store;
         }
+
+        getStoreDispatcher(): StoreDispatcher<S> {
+            return this.store;
+        }
     }
 
-    class FilterActionManager<S, A> implements ActionManager<S, A> {
-        constructor(private parent: ActionManager<S, A>, private filterFunction: (a: A) => boolean) {
+    class FilterActionManager<S, A> implements ActionManagerDispatcher<S, A> {
+        constructor(private parent: ActionManagerDispatcher<S, A>, private filterFunction: (a: A) => boolean) {
         }
 
         subscribeReducer(reducer: Reducer<S, A>): void {
-            this.getStore().subscribeReducer(this.observable(), reducer);
+            this.getStoreDispatcher().subscribeReducerEvent(this.observableEvent(), reducer);
         }
 
         subscribe(reducer: (s: S, a: A) => S): void {
-            this.getStore().subscribe(this.observable(), reducer);
+            this.getStoreDispatcher().subscribeEvent(this.observableEvent(), reducer);
         }
 
         observable(): Observable<A> {
             return this.parent.observable().filter(this.filterFunction);
+        }
+
+
+        observableEvent(): Observable<Event<A>> {
+            return this.parent.observableEvent().filter(e=>this.filterFunction(e.event));
         }
 
         filter(filter: (a: A) => boolean): ActionManager<S, A> {
@@ -237,13 +309,15 @@ export namespace StoRx {
         getStore(): Store<S> {
             return this.parent.getStore();
         }
+
+        getStoreDispatcher(): StoreDispatcher<S> {
+            return this.parent.getStoreDispatcher();
+        }
     }
 
-    class ViewStore<S, P> implements Store<S> {
-        private actionSubject: Subject<any>;
+    class ViewStore<S, P> implements StoreDispatcher<S> {
 
-        constructor(private mapFunc: (s: P) => S, private mapReverseFunction: (state: S, parentState: P) => P, private store: Store<P>) {
-            this.actionSubject = new Subject();
+        constructor(private id:string, private mapFunc: (s: P) => S, private mapReverseFunction: (state: S, parentState: P) => P, private store: StoreDispatcher<P>) {
         }
 
 
@@ -253,16 +327,20 @@ export namespace StoRx {
 
 
         dispatch<A>(action: A) {
-            this.store.dispatch(action);
-            this.actionSubject.next(action);
+            this.store.dispatchWithSource(action, this.id);
+        }
+
+
+        dispatchWithSource<A>(action: A, source: string) {
+            this.store.dispatchWithSource(action, source);
         }
 
         action<A>(): ActionManager<S, A> {
-            return new ActionManagerImpl(this, this.actionSubject);
+            return new ActionManagerImpl(this, this.store.actions());
         }
 
         actionByType<A>(type: new () => A): ActionManager<S, A> {
-            return new ActionManagerImpl(this, this.actionSubject.asObservable().filter(v => v instanceof type));
+            return new ActionManagerImpl(this, <Observable<Event<A>>>this.store.actions().filter(v => v.event instanceof type));
         }
 
         subscribe<A>(actions: Observable<A>, reducer: (s: S, a: A) => S): void {
@@ -274,14 +352,26 @@ export namespace StoRx {
         }
 
 
-        public mapFunction<T>(map: (s: S) => T, mapReverse: (state: T, parentState: S) => S): Store<T> {
-            return new ViewStore(map, mapReverse, this);
+        subscribeEvent<A>(actions: Observable<Event<A>>, reducer: (s: S, a: A) => S): void {
+            this.store.subscribeReducerEvent(actions.filter(event=> event.source.startsWith(this.id)), new ViewReducer(this.mapFunc, this.mapReverseFunction, new ReducerFunction(reducer)));
+        }
+
+        subscribeReducerEvent<A>(actions: Observable<Event<A>>, reducer: Reducer<S, A>): void {
+            this.store.subscribeReducerEvent(actions.filter(event=> event.source.startsWith(this.id)), new ViewReducer(this.mapFunc, this.mapReverseFunction, reducer));
+        }
+
+        public mapFunction<T>(id:string, map: (s: S) => T, mapReverse: (state: T, parentState: S) => S): Store<T> {
+            return new ViewStore(this.id+"."+id, map, mapReverse, this);
         }
 
         public map<T>(path: string): Store<T> {
-            return new ViewStore(StoreUtils.createMapFunction(path), StoreUtils.createMapReverseFunction(path), this);
+            return new ViewStore(this.id+"."+path, StoreUtils.createMapFunction(path), StoreUtils.createMapReverseFunction(path), this);
         }
 
+
+        actions<A>(): Observable<Event<A>> {
+            return this.store.actions();
+        }
     }
 
     class ViewReducer<P, S, A> implements Reducer<P, A> {

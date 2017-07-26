@@ -103,7 +103,7 @@ describe("Store test",()=>{
     it('store change any action value subStore by mapFunction function', () => {
         let initState:State = { name : "1", count:0};
         let store:Store<State> = createStore(initState);
-        let substore:Store<string> = store.mapFunction((s:State)=>s.name, (s:string, p:State)=>{p.name=s; return p});
+        let substore:Store<string> = store.mapFunction('name', (s:State)=>s.name, (s:string, p:State)=>{p.name=s; return p});
         substore.action().subscribe((s:any,a:any)=> { return a.name} );
         let state:any = null;
         let substate:any = null;
@@ -157,8 +157,8 @@ describe("Store test",()=>{
     it('store change any action value subStore of substore by mapFunction function', () => {
         let initState = {parent:{ name : "1"}};
         let store = createStore(initState);
-        let substore = store.mapFunction((s:any)=>s.parent, (s:any, p:any)=> {p.parent=s; return p;})
-            .mapFunction((s:any)=>s.name, (s:any, p:any)=> {p.name=s; return p;});
+        let substore = store.mapFunction('parent',(s:any)=>s.parent, (s:any, p:any)=> {p.parent=s; return p;})
+            .mapFunction('name',(s:any)=>s.name, (s:any, p:any)=> {p.name=s; return p;});
         substore.action().subscribe((s:any,a:any)=> { return a.name} );
         let state:any = null;
         let substate:any = null;
@@ -248,25 +248,23 @@ describe("Store test",()=>{
     it('change in a substore should not trigger distinct substore', () => {
         let initState = { name : 0, count:0};
         let store = createStore(initState);
-        let countStore = store.map("count");
-        let nameStore = store.map("name");
         let countStoreUpdate = 0;
         let storeUpdate = 0;
         let nameUpdate = 0;
         store.observable().subscribe(s=>storeUpdate +=1);
-        countStore.observable().subscribe(s=>countStoreUpdate+=1);
-        nameStore.observable().subscribe(s=>nameUpdate+=1);
-        countStore.action().subscribe((s:number,a:any)=>s+1);
-        nameStore.action().subscribe((s:number,a:any)=>s+1);
-        nameStore.dispatch({});
+        store.map("count").observable().subscribe(s=>countStoreUpdate+=1);
+        store.map("name").observable().subscribe(s=>nameUpdate+=1);
+        store.map("count").action().subscribe((s:number,a:any)=>s+1);
+        store.map("name").action().subscribe((s:number,a:any)=>s+1);
+        store.map("name").dispatch({});
         expect(countStoreUpdate).to.be.eq(1);
         expect(storeUpdate).to.be.eq(2);
         expect(nameUpdate).to.be.eq(2);
-        countStore.dispatch({});
+        store.map("count").dispatch({});
         expect(countStoreUpdate).to.be.eq(2);
         expect(storeUpdate).to.be.eq(3);
         expect(nameUpdate).to.be.eq(2);
-        countStore.dispatch({});
+        store.map("count").dispatch({});
         expect(countStoreUpdate).to.be.eq(3);
         expect(storeUpdate).to.be.eq(4);
         expect(nameUpdate).to.be.eq(2);
