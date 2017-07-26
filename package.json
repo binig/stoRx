@@ -24,11 +24,13 @@
     "codecov": "^2.2.0",
     "cross-env": "^5.0.1",
     "crossenv": "^6.1.1",
+    "growl": "^1.10.2",
     "istanbul-reports": "^1.1.1",
     "mkdirp": "^0.5.1",
     "mocha": "^3.4.2",
     "nyc": "^11.0.3",
     "rimraf": "^2.6.1",
+    "rxjs": "^5.4.2",
     "ts-helper": "^0.0.1",
     "ts-loader": "^2.3.0",
     "ts-node": "^3.2.1",
@@ -36,8 +38,7 @@
     "typescript": "^2.4.1",
     "webpack": "^3.3.0"
   },
-  "dependencies": {
-    "growl": "^1.10.2",
+  "peerDependencies": {
     "rxjs": "^5.4.2"
   },
   "nyc": {
@@ -59,5 +60,4 @@
       "html"
     ],
     "all": true
-  }
-}
+  }}
