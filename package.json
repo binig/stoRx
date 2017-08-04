@@ -23,7 +23,6 @@
     "chromedriver": "^2.30.1",
     "codecov": "^2.2.0",
     "cross-env": "^5.0.1",
-    "crossenv": "^6.1.1",
     "growl": "^1.10.2",
     "istanbul-reports": "^1.1.1",
     "mkdirp": "^0.5.1",
